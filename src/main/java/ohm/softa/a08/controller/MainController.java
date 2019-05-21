@@ -1,8 +1,7 @@
 package ohm.softa.a08.controller;
 
 import com.google.gson.Gson;
-import ohm.softa.a08.api.OpenMensaAPI;
-import ohm.softa.a08.model.Meal;
+import com.google.gson.GsonBuilder;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,13 +10,13 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListView;
+import ohm.softa.a08.api.OpenMensaAPIService;
+import ohm.softa.a08.model.Meal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -43,22 +42,6 @@ public class MainController implements Initializable {
 	 */
 	private static final DateFormat openMensaDateFormat;
 
-	private final OpenMensaAPI api;
-	private final ObservableList<Meal> meals;
-	private final Gson gson;
-
-	/**
-	 * Binding of ChoiceBox UI element to filter for certain types of meals
-	 */
-	@FXML
-	private ChoiceBox<String> filterChoiceBox;
-
-	/**
-	 * Binding of ListView UI element to display meals
-	 */
-	@FXML
-	private ListView<Meal> mealsListView;
-
 	/*
 	  static initializer to initialize fields in class
 	 */
@@ -67,21 +50,25 @@ public class MainController implements Initializable {
 		openMensaDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 	}
 
+	private final ObservableList<Meal> meals;
+	private final Gson gson;
+	/**
+	 * Binding of ChoiceBox UI element to filter for certain types of meals
+	 */
+	@FXML
+	private ChoiceBox<String> filterChoiceBox;
+	/**
+	 * Binding of ListView UI element to display meals
+	 */
+	@FXML
+	private ListView<Meal> mealsListView;
+
 	/**
 	 * Default constructor
 	 */
 	public MainController() {
 		meals = FXCollections.observableArrayList();
-		gson = new Gson();
-
-		/* initialize Retrofit instance */
-		var retrofit = new Retrofit.Builder()
-			.addConverterFactory(GsonConverterFactory.create(gson))
-			.baseUrl("http://openmensa.org/api/v2/")
-			.build();
-
-		/* create OpenMensaAPI instance */
-		api = retrofit.create(OpenMensaAPI.class);
+		gson = new GsonBuilder().create();
 	}
 
 	/**
@@ -103,7 +90,7 @@ public class MainController implements Initializable {
 	 */
 	@FXML
 	public void doGetMeals() {
-		api.getMeals(openMensaDateFormat.format(new Date())).enqueue(new Callback<>() {
+		OpenMensaAPIService.getInstance().getApi().getMeals(openMensaDateFormat.format(new Date())).enqueue(new Callback<>() {
 			@Override
 			public void onResponse(Call<List<Meal>> call, Response<List<Meal>> response) {
 				logger.debug("Got response");
@@ -112,10 +99,10 @@ public class MainController implements Initializable {
 					if (!response.isSuccessful() || response.body() == null) {
 						logger.error(String.format("Got response with not successfull code %d", response.code()));
 
-							var alert = new Alert(Alert.AlertType.ERROR);
-							alert.setHeaderText("Unsuccessful HTTP call");
-							alert.setContentText("Failed to get meals from OpenMensaAPI");
-							alert.show();
+						var alert = new Alert(Alert.AlertType.ERROR);
+						alert.setHeaderText("Unsuccessful HTTP call");
+						alert.setContentText("Failed to get meals from OpenMensaAPI");
+						alert.show();
 
 						return;
 					}
