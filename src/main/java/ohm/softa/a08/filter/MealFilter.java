@@ -1,4 +1,4 @@
-package ohm.softa.a08.controller;
+package ohm.softa.a08.filter;
 
 import ohm.softa.a08.model.Meal;
 

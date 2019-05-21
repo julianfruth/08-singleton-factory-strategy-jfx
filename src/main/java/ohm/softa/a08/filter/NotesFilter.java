@@ -1,4 +1,4 @@
-package ohm.softa.a08.controller;
+package ohm.softa.a08.filter;
 
 import ohm.softa.a08.model.Meal;
 
@@ -12,6 +12,6 @@ public class NotesFilter extends BaseFilter {
 
 	@Override
 	boolean include(Meal meal) {
-		return !meal.getCategory().contains(note);
+		return !meal.getCategory().toLowerCase().contains(note);
 	}
 }

@@ -11,6 +11,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListView;
 import ohm.softa.a08.api.OpenMensaAPIService;
+import ohm.softa.a08.filter.MealFilterFactory;
 import ohm.softa.a08.model.Meal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,7 +24,6 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Controller for main.fxml
@@ -108,13 +108,9 @@ public class MainController implements Initializable {
 					}
 
 					meals.clear();
+					var mFilter = MealFilterFactory.getStartegy(filterChoiceBox.getValue());
+					meals.setAll(mFilter.filter(response.body()));
 
-					if ("Vegetarian".equals(filterChoiceBox.getValue()))
-						meals.addAll(response.body().stream()
-							.filter(Meal::isVegetarian)
-							.collect(Collectors.toList()));
-					else
-						meals.addAll(response.body());
 				});
 			}
 
